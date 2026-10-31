@@ -1,0 +1,32 @@
+name: Build MAYRAA APK
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install
+      - run: npx cap add android
+      - name: Add permissions
+        run: |
+          sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/><uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/><queries><intent><action android:name="android.speech.RecognitionService"/></intent><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent></queries><application#' android/app/src/main/AndroidManifest.xml
+      - run: npx cap sync android
+      - run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: MAYRAA AI build ${{ github.run_number }}
+          files: android/app/src/main/../../build/outputs/apk/debug/app-debug.apk
