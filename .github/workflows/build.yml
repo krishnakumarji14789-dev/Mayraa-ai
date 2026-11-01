@@ -15,7 +15,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - run: npm install--legacy-peer-deps
+      - run: npm install --legacy-peer-deps
       - run: npx cap add android
       - name: Add permissions
         run: |
